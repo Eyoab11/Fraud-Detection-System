@@ -1,30 +1,108 @@
-# Improved Fraud Detection System
+# Improved Fraud Detection for E-commerce and Banking
 
-## Project Overview
+This project, developed for Adey Innovations Inc., aims to build and evaluate robust machine learning models to detect fraudulent transactions in two distinct domains: e-commerce purchases and bank credit card transactions. The primary goal is to accurately identify fraudulent activity while minimizing the disruption to legitimate users, balancing the trade-off between security and user experience.
 
-This project aims to build a robust fraud detection system using two real-world datasets:
-- **E-commerce Fraud Data**: Contains user transactions, device/browser info, and fraud labels.
-- **Credit Card Fraud Data**: Contains anonymized credit card transactions with fraud labels.
+## Project Status
 
-The goal is to explore, preprocess, and analyze these datasets, engineer meaningful features, visualize key patterns, and lay the groundwork for effective fraud detection modeling.
+**Current Stage**: Task 2: Model Building and Evaluation - Complete.
+- Data preprocessing and feature engineering are complete.
+- Two models (Logistic Regression and LightGBM) have been trained and evaluated on both datasets.
+- Initial model selection has been performed based on performance metrics.
 
----
+## Project Structure
 
-## Data Sources
+The repository is organized to ensure clarity, reproducibility, and scalability:
 
-- **E-commerce Fraud Data**: Includes user demographics, transaction times, device/browser info, and fraud labels.
-- **Credit Card Fraud Data**: Contains anonymized features (V1–V28), transaction amounts, and fraud labels.
+```
+.
+├── data/
+│   ├── 01_raw/         # Original, immutable datasets
+│   └── ...
+├── models/             # Saved (serialized) trained model pipelines
+├── notebooks/          # Jupyter notebooks for analysis and modeling
+│   ├── 01_ecommerce_eda_and_preprocessing.ipynb
+│   ├── 02_creditcard_eda_and_preprocessing.ipynb
+│   └── 03_modelling_and_evaluation.ipynb
+├── reports/
+│   ├── figures/        # Saved plots and charts
+│   └── ...
+├── src/                # (Future) For reusable Python functions
+└── requirements.txt    # Project dependencies
+```
 
----
+## Setup and Installation
 
-## Data Processing & Feature Engineering
+To replicate the analysis, please follow these steps:
 
-- **Cleaning**: Removed duplicate records and corrected data types (e.g., timestamps).
-- **Feature Engineering**:
-  - For e-commerce data, engineered `time_since_signup` (time between signup and purchase).
-  - Explored categorical features like browser, source, and sex for their relationship to fraud.
+**Clone the repository:**
+```bash
+git clone <your-repository-url>
+cd <repository-name>
+```
 
----
+**Create and activate a virtual environment:**
+```bash
+python -m venv venv
+# On Windows
+.\venv\Scripts\Activate
+# On macOS/Linux
+source venv/bin/activate
+```
+
+**Install the required dependencies:**
+```bash
+pip install -r requirements.txt
+```
+
+## Methodology
+
+### 1. Data Preprocessing and Feature Engineering (Task 1)
+
+**Data Cleaning**: Duplicate entries were identified and removed from both Fraud_Data.csv and creditcard.csv.
+
+**Feature Engineering**: For the e-commerce dataset, a new feature `time_since_signup` was engineered by calculating the seconds between user signup and purchase time. This proved to be a highly predictive feature.
+
+**Geolocation Analysis**: An attempt was made to map IP addresses to countries. However, investigation revealed that the numerical IP addresses in Fraud_Data.csv were incompatible with the ranges provided in IpAddress_to_Country.csv. This feature was therefore abandoned due to data quality issues.
+
+### 2. Modeling Pipeline (Task 2)
+
+A robust and reusable modeling pipeline was constructed to ensure consistency and prevent data leakage. The key steps are:
+
+**Preprocessing**: A ColumnTransformer was used to apply StandardScaler to all numerical features and OneHotEncoder to categorical features.
+
+**Imbalance Handling**: The SMOTE (Synthetic Minority Over-sampling Technique) was integrated into the pipeline to oversample the minority (fraud) class. This was applied only to the training data to ensure an unbiased evaluation on the test set.
+
+**Model Training**: Two models were evaluated: a LogisticRegression baseline and a powerful LightGBM ensemble model.
+
+## Performance Results
+
+The models were evaluated using metrics appropriate for imbalanced classification: F1-Score and AUC-PR (Average Precision), with a focus on the 'Fraud' class.
+
+| Dataset | Model | F1-Score (Fraud) | AUC-PR | Recall (Fraud) | Precision (Fraud) | False Positives |
+|---------|-------|------------------|--------|----------------|-------------------|-----------------|
+| E-commerce | Logistic Regression | 0.27 | 0.45 | 0.69 | 0.17 | 9844 |
+| E-commerce | LightGBM | 0.69 | 0.62 | 0.53 | 1.00 | 1 |
+| Credit Card | Logistic Regression | 0.10 | 0.67 | 0.87 | 0.05 | 1490 |
+| Credit Card | LightGBM | 0.66 | 0.75 | 0.82 | 0.56 | 62 |
+
+## Analysis of Results
+
+**E-commerce Data**: The Logistic Regression model achieved high recall (catching 69% of fraud) but at a disastrous cost to precision, resulting in 9,844 false positives. The LightGBM model, while catching slightly less fraud (53% recall), had near-perfect precision, producing only 1 false positive. This makes it vastly superior from a user experience perspective.
+
+**Credit Card Data**: This dataset's extreme imbalance proved very challenging. The Logistic Regression model again achieved high recall (87%) but was almost always wrong, flagging 1,490 legitimate transactions incorrectly. The LightGBM model provided a much better balance, catching a high percentage of fraud (82% recall) while drastically reducing false positives to just 62.
+
+## Model Selection Justification
+
+Based on the evaluation across both datasets, the LightGBM model is the clear winner.
+
+**Justification:**
+- **Superior Balance**: LightGBM consistently provides a much better balance between Precision and Recall, as evidenced by its significantly higher F1-Scores.
+- **Business Impact**: A key challenge is minimizing False Positives to avoid alienating customers. LightGBM reduced false positives by over 99% compared to the baseline in both scenarios, making it a far more practical and business-friendly solution.
+- **Robustness**: It performed exceptionally well even on the highly imbalanced and anonymized credit card dataset, demonstrating its ability to capture complex patterns.
+
+## Next Steps
+
+The next phase of this project will focus on **Task 3: Model Explainability**. We will use the SHAP (SHapley Additive exPlanations) library to interpret the decisions of our best-performing LightGBM models. This will help us understand the key drivers of fraud and build trust in the model's predictions.
 
 ## Exploratory Data Analysis (EDA)
 
@@ -55,24 +133,6 @@ Key findings and visualizations:
   - ![V14](reports/figures/creditcard_V14_distribution.png)
   - ![V17](reports/figures/creditcard_V17_distribution.png)
 
----
-
-## Project Structure
-
-```
-.
-├── data/                  # Raw, intermediate, and processed data
-├── notebooks/             # Jupyter notebooks for EDA and preprocessing
-├── reports/
-│   ├── figures/           # Generated plots
-│   └── Interim_1_Report.md
-├── src/                   # Source code for data processing, feature engineering, modeling
-├── README.md
-└── requirements.txt
-```
-
----
-
 ## Getting Started
 
 1. **Clone the repository** and set up a virtual environment.
@@ -82,16 +142,8 @@ Key findings and visualizations:
    ```
 3. **Run the notebooks** in the `notebooks/` directory to reproduce the analysis and figures.
 
----
-
-## Next Steps
-
-- Implement and evaluate machine learning models for fraud detection.
-- Perform model interpretation and explainability (see planned notebooks).
-
----
-
 ## Acknowledgements
 
 - Datasets sourced from public repositories for educational purposes.
 - Visualizations generated using Matplotlib and Seaborn.
+- Project developed for Adey Innovations Inc.
