@@ -36,8 +36,8 @@ To replicate the analysis, please follow these steps:
 
 **Clone the repository:**
 ```bash
-git clone <your-repository-url>
-cd <repository-name>
+git clone https://github.com/Eyoab11/Fraud-Detection-System>
+cd Fraud-Detection-System
 ```
 
 **Create and activate a virtual environment:**
