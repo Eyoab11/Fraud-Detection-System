@@ -147,3 +147,63 @@ Key findings and visualizations:
 - Datasets sourced from public repositories for educational purposes.
 - Visualizations generated using Matplotlib and Seaborn.
 - Project developed for Adey Innovations Inc.
+
+# Task 3: Model Explainability with SHAP
+
+To understand the decision-making process of the best-performing LightGBM models, we used the SHAP (SHapley Additive exPlanations) library. This allows us to interpret both the global feature importance across all predictions and the local feature contributions for individual transactions.
+
+## 1. E-commerce Fraud Model Interpretation
+
+*(Note: This section is based on the previous plots you shared for the e-commerce model)*
+
+The SHAP analysis reveals that the model's predictions are dominated by a few key features:
+
+- **Global Importance**:  
+  The summary plot shows that `time_since_signup` is by far the most influential feature. Low values for this feature (meaning a purchase happened very soon after signup) strongly push the prediction towards "Fraud". `age` and `purchase_value` also have a noticeable impact, while categorical features like `browser` and `source` are less important.
+
+- **Local Prediction**:  
+  The force plot for a single fraudulent transaction confirms this. The prediction was driven almost entirely by an extremely low `time_since_signup` value, which overpowered all other features.
+
+## 2. Credit Card Fraud Model Interpretation
+
+The SHAP analysis for the credit card dataset provides valuable insights into the anonymized features.
+
+### Global Feature Importance
+
+![SHAP Summary for Credit Card Model](reports/figures/shap_summary_creditcard.png)
+
+**Key Drivers of Fraud**:  
+The summary plot clearly identifies a hierarchy of feature importance. The most significant features driving the model's predictions are:
+- `num__V14`
+- `num__V1`
+- `num__V26`
+- `num__V10`
+- `num__V17`
+
+**How Features Impact Predictions**:
+- `num__V14`: This is the most powerful predictor. Low values of V14 (blue dots) have a very high positive SHAP value, meaning they are a strong indicator of fraud.
+- `num__V17`: Similar to V14, low values of V17 also strongly push the prediction towards fraud.
+- `num__V4`: This feature works in the opposite direction. High values of V4 (red dots) have a positive SHAP value, indicating that a higher V4 value is associated with fraud.
+
+Even without knowing the original meaning of these PCA components, SHAP allows us to understand which underlying data patterns are most critical for fraud detection.
+
+### Local Prediction Explanation
+
+![Force Plot for Credit Card Model](reports/figures/screenshot_force_plot_creditcard.png)
+
+*(Note: This assumes you have saved a screenshot of the force plot to this location)*
+
+The force plot above explains the prediction for a single transaction that was correctly identified as fraudulent.
+
+- **Compounding Factors**:  
+  Unlike the e-commerce model, this prediction was not driven by a single feature. Instead, it was the result of multiple features all pushing the prediction higher (towards fraud).
+
+- **Contributing Features**:  
+  The red arrows show that low values for `V17`, `V12`, `V14`, `V10`, and `V25`, along with a high value for `V4`, all contributed to increasing the fraud score.
+
+- **Counteracting Features**:  
+  A few features, notably `V8` and `V16`, pushed the prediction lower (towards legitimate), but their combined effect was not strong enough to overcome the evidence from the fraud-indicating features.
+
+## Conclusion from Task 3
+
+Model explainability using SHAP has been highly successful. We have moved beyond simply knowing that a model works and can now explain why it works. We have identified the specific features that are the most powerful indicators of fraud in both datasets, providing actionable insights that can be used to improve fraud detection strategies and build trust with stakeholders.
